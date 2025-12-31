@@ -56,7 +56,7 @@ const AdoptionSection = () => {
 
       {/* ================= PART 2: ADOPTION BANNER ================= */}
       {/* Constraint: min-h-70/75 roughly translates to 280px-300px. Using min-h-[300px] for desktop. */}
-      <div className="relative flex flex-col md:flex-row bg-[#FDF3DA] rounded-[30px] md:rounded-[40px] overflow-hidden min-h-[300px]">
+      <div className="relative flex flex-col md:flex-row bg-[#FDF3DA] rounded-[30px] md:rounded-[40px] overflow-hidden min-h-75">
         
         {/* --- LEFT SIDE (TEXT CONTENT) --- */}
         <div className="w-full md:w-1/2 p-8 md:p-12 lg:pl-16 flex flex-col justify-center relative z-10 order-2 md:order-1">

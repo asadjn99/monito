@@ -48,10 +48,10 @@
 //             <p>Phone: {safeUser.phone}</p>
 //           </div>
 //           <div className="w-1/2 text-right">
-//              <h3 className="font-bold border-b mb-2 pb-1">Payment Details:</h3>
-//              <p>Method: {safePayment.method || 'N/A'}</p>
-//              <p>Trx ID: {safePayment.transactionId || 'N/A'}</p>
-//              <p>Status: <span className="font-bold uppercase">{safePayment.status}</span></p>
+//               <h3 className="font-bold border-b mb-2 pb-1">Payment Details:</h3>
+//               <p>Method: {safePayment.method || 'N/A'}</p>
+//               <p>Trx ID: {safePayment.transactionId || 'N/A'}</p>
+//               <p>Status: <span className="font-bold uppercase">{safePayment.status}</span></p>
 //           </div>
 //         </div>
 
@@ -93,7 +93,7 @@
 //   );
 
 //   return (
-//     <div id="printable-area" className="hidden print:block fixed inset-0 bg-white z-[9999]">
+//     <div id="printable-area" className="hidden print:block fixed inset-0 bg-white z-9999">
 //       <ChallanCopy title="OFFICE COPY" />
 //       <ChallanCopy title="CUSTOMER COPY" />
 //     </div>
@@ -105,9 +105,9 @@
 // const OrderDetailsAdmin = () => {
 //   const params = useParams();
 //   const router = useRouter();
-//   const orderId = params?.id; 
+//   const orderId = params?.id as string; 
 
-//   const [order, setOrder] = useState(null);
+//   const [order, setOrder] = useState<any>(null);
 //   const [isLoading, setIsLoading] = useState(true);
 //   const [error, setError] = useState('');
 
@@ -130,7 +130,7 @@
 //         setOrder(data);
 //         setSelectedStatus(data.status); 
 //         if(data.cancellationReason) setCancellationReasonInput(data.cancellationReason);
-//       } catch (err) {
+//       } catch (err: any) {
 //         setError(err.message);
 //       } finally {
 //         setIsLoading(false);
@@ -174,7 +174,7 @@
 //       if(selectedStatus !== 'Cancelled') setCancellationReasonInput(''); 
       
 //       router.refresh();
-//     } catch (err) {
+//     } catch (err: any) {
 //       alert(`Error updating status: ${err.message}`);
 //     } finally {
 //       setIsUpdating(false);
@@ -182,7 +182,7 @@
 //   };
 
 //   // --- 3. HANDLE PAYMENT UPDATES ---
-//   const handlePaymentAction = async (action) => {
+//   const handlePaymentAction = async (action: string) => {
 //     if(!window.confirm(`Are you sure you want to mark payment as ${action}?`)) return;
 
 //     try {
@@ -197,7 +197,7 @@
 //       const updatedResponse = await response.json();
 //       const newOrderData = updatedResponse.order || updatedResponse;
 //       setOrder(newOrderData);
-//     } catch(err) {
+//     } catch(err: any) {
 //        alert(`Error updating payment: ${err.message}`);
 //     }
 //   };
@@ -207,7 +207,7 @@
 //   };
 
 
-//   const getStatusColor = (status) => {
+//   const getStatusColor = (status: string) => {
 //     switch (status) {
 //       case 'Order Placed': return 'bg-yellow-100 text-yellow-800';
 //       case 'Confirmed': return 'bg-blue-100 text-blue-800';
@@ -261,8 +261,8 @@
 //           </p>
 //         </div>
 
-//         {/* Hide print button if cancelled to avoid confusion, or keep it if needed for records */}
-//         <button onClick={handlePrint} className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition shadow-sm">
+//         {/* PRINT BUTTON */}
+//         <button onClick={handlePrint} className="flex items-center gap-2 bg-blue-900 text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition shadow-lg">
 //           <Printer size={18} />
 //           Print Challan
 //         </button>
@@ -291,7 +291,7 @@
 //                   </tr>
 //                 </thead>
 //                 <tbody className="divide-y divide-gray-100">
-//                   {safeItems.length > 0 ? safeItems.map((item, idx) => (
+//                   {safeItems.length > 0 ? safeItems.map((item: any, idx: number) => (
 //                     <tr key={idx} className="text-sm">
 //                       <td className="py-4 flex items-center gap-3">
 //                         <img src={item.image || "/api/placeholder/50/50"} alt={item.name} className="w-12 h-12 rounded-md object-cover bg-gray-100 border" />
@@ -530,34 +530,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -567,8 +539,8 @@ import {
   Truck, Box, AlertTriangle, Save, X, Image as ImageIcon
 } from 'lucide-react';
 
-// --- PRINTABLE CHALLAN COMPONENT ---
-const PrintableChallan = ({ order }) => {
+// --- PRINTABLE CHALLAN COMPONENT (FIXED TYPES) ---
+const PrintableChallan = ({ order }: { order: any }) => {
   if (!order) return null;
 
   const safeTotal = order.totalAmount || 0;
@@ -577,7 +549,8 @@ const PrintableChallan = ({ order }) => {
   const safeAddress = order.shippingAddress || {};
   const safePayment = order.paymentInfo || {};
 
-  const ChallanCopy = ({ title }) => (
+  // Fixed 'title' implicit any error here as well
+  const ChallanCopy = ({ title }: { title: string }) => (
     <div className="challan-half h-[50vh] border-b-2 border-dashed border-gray-400 p-8 flex flex-col justify-between font-mono text-sm leading-tight relative">
       {/* WATERMARK IF CANCELLED */}
       {order.status === 'Cancelled' && (
@@ -625,7 +598,7 @@ const PrintableChallan = ({ order }) => {
             </tr>
           </thead>
           <tbody>
-            {safeItems.map((item, index) => (
+            {safeItems.map((item: any, index: number) => (
               <tr key={index} className="border-b border-gray-200">
                 <td className="py-2">{item.name}</td>
                 <td className="text-center py-2">{item.quantity}</td>
