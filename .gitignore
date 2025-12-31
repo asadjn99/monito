@@ -1,0 +1,15 @@
+# Ignore root dependencies
+node_modules/
+
+# Ignore client dependencies
+client/node_modules/
+
+# Ignore builds
+.next/
+client/.next/
+dist/
+build/
+
+# Ignore env files
+.env
+.env.local
