@@ -17,13 +17,20 @@ model User {
   image          String?
   hashedPassword String?
   password       String?
-  role           String    @default("user")
+  role           String    @default("user") // "admin" or "user"
+  
+  // 🆕 ADDED: For Customer Management
+  phone          String?   
+  address        String?
+  city           String?
+  country        String?
+
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
   accounts Account[]
   sessions Session[]
-  orders   Order[]   // 👈 ADDED: Relation to Orders
+  orders   Order[]   
 }
 
 model Account {
@@ -62,21 +69,21 @@ model Pet {
   category        String
   breed           String?
   gender          String?
-  age             String?  // Kept as String to match your existing data
-  price           String   // Kept as String to match your existing data
+  age             String?  
+  price           String?  
   color           String?
   description     String?
   imageUrl        String?
   images          String[]
   healthGuarantee Boolean?
-  status          String   @default("Available")
+  status          String   @default("Available") // "Available", "Sold"
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
 
 model Order {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  orderId   String   @unique
+  orderId   String   @unique // Short readable ID (e.g. #ABC1234)
 
   // Customer Info
   userId    String?  @db.ObjectId
@@ -86,37 +93,57 @@ model Order {
   address   String
   city      String
 
-  // Add this field for the note
-  cancellationReason String?
-
   // Order Details
   total     Int
-  status    String   @default("New")
+  status    String   @default("Pending") // Changed default to "Pending" or "New"
+  cancellationReason String? // For rejected orders
 
   // Payment Details
-  paymentMethod String  @default("COD") // "COD" or "Bank"
-  paymentStatus String  @default("Unverified") 
-  bankName      String? // For Bank Transfer
-  transactionId String? // For Bank Transfer
+  paymentMethod     String  @default("COD") 
+  paymentStatus     String  @default("Unverified") 
+  bankName          String? 
+  transactionId     String? 
+  paymentScreenshot String? // 🆕 ADDED: Stores the base64 or URL of the proof
 
-  items     OrderItem[]
-  
-  // Relation to User (Optional, so Guest Checkout still works)
-  user      User?    @relation(fields: [userId], references: [id]) 
+  items      OrderItem[]
+   
+  // Relation to User
+  user       User?    @relation(fields: [userId], references: [id]) 
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model OrderItem {
-  id      String  @id @default(auto()) @map("_id") @db.ObjectId
-  orderId String  @db.ObjectId
-  petId   String  // No @db.ObjectId constraint (Prevents crashes if Pet is deleted)
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId  String  @db.ObjectId
+  petId    String  // Just the ID string, no strict relation (prevents error if Pet is deleted)
 
-  // Snapshot of data
-  petName String
-  price   Int
-  image   String?
+  // Snapshot of data at time of purchase
+  petName  String
+  price    Int
+  image    String?
 
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+
+
+// --- CONFIGURATION MODELS ---
+
+model StoreSettings {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  storeName      String   @default("Monito Pet Shop")
+  supportEmail   String   @default("support@monito.com")
+  supportPhone   String   @default("+92 300 1234567")
+  address        String?  
+  
+  // Payment Config
+  enableCOD      Boolean  @default(true)
+  enableBank     Boolean  @default(true)
+  bankName       String?  @default("Meezan Bank")
+  bankAccount    String?  @default("0101-239482-01")
+  bankTitle      String?  @default("Monito Pets")
+
+  updatedAt      DateTime @updatedAt
 }

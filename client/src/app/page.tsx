@@ -6,7 +6,8 @@ import AdoptionSection from "@/src/components/AdoptionSection";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#FDF7E4]">
+    // bg-[#FDF7E4]"
+    <main className="min-h-screen">
     
       <Hero />
       

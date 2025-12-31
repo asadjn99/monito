@@ -1,67 +1,7 @@
 
-// import { NextResponse } from 'next/server';
-// import prisma from '@/src/lib/prisma';
-
-// // 1. GET ALL PETS (Real Data)
-// export async function GET() {
-//   try {
-//     const pets = await prisma.pet.findMany({
-//       orderBy: { createdAt: 'desc' } // Newest first
-//     });
-//     return NextResponse.json(pets);
-//   } catch (error) {
-//     return NextResponse.json({ error: "Failed to fetch pets" }, { status: 500 });
-//   }
-// }
-
-// // 2. CREATE PET
-// export async function POST(req) {
-//   try {
-//     const body = await req.json();
-
-//     // Validation: Ensure required fields exist
-//     if (!body.id || !body.title || !body.price) {
-//         return NextResponse.json({ error: "Missing required fields (ID, Title, Price)" }, { status: 400 });
-//     }
-
-//     const newPet = await prisma.pet.create({
-//       data: {
-//         code: body.id,
-//         name: body.title,
-//         category: body.category,
-//         breed: body.breed,
-//         gender: body.gender,
-//         age: body.age,
-//         price: body.price,
-//         color: body.color,
-//         description: body.description,
-//         imageUrl: body.imageUrl,
-//         images: body.images || [],
-//         healthGuarantee: body.healthGuarantee,
-//         status: 'Available'
-//       }
-//     });
-
-//     return NextResponse.json({ success: true, pet: newPet });
-//   } catch (error) {
-//     console.error("Create Error:", error); // Check your terminal for this!
-//     if (error.code === 'P2002') {
-//       return NextResponse.json({ error: "A pet with this ID (MO...) already exists." }, { status: 400 });
-//     }
-//     return NextResponse.json({ error: error.message || "Failed to create pet" }, { status: 500 });
-//   }
-// }
-
-
-
-
-
-
-
-
-
 // import { NextRequest, NextResponse } from 'next/server';
-// import prisma from '@/src/lib/prisma'; // 👈 Check this path. Try '@/lib/prisma' or '../lib/prisma' if red.
+// // 👇 Check this import path. If you moved files to 'src', it might be '@/lib/prisma'
+// import prisma from '@/src/lib/prisma'; 
 
 // // 1. GET ALL PETS
 // export async function GET() {
@@ -71,29 +11,25 @@
 //     });
 //     return NextResponse.json(pets);
 //   } catch (error) {
+//     console.error("GET Error:", error); // 👈 Check your VS Code terminal for this log
 //     return NextResponse.json({ error: "Failed to fetch pets" }, { status: 500 });
 //   }
 // }
 
 // // 2. CREATE PET
-// export async function POST(req: NextRequest) { // 👈 Added type ': NextRequest'
+// export async function POST(req: NextRequest) {
 //   try {
 //     const body = await req.json();
 
-//     // Validation
-//     if (!body.id || !body.title || !body.price) {
-//         return NextResponse.json({ error: "Missing required fields (ID, Title, Price)" }, { status: 400 });
-//     }
-
 //     const newPet = await prisma.pet.create({
 //       data: {
-//         code: body.id,        // Make sure your DB model uses 'code', not 'id' for the manual ID
+//         code: body.id,        
 //         name: body.title,
 //         category: body.category,
 //         breed: body.breed,
 //         gender: body.gender,
-//         age: Number(body.age),      // 👈 Converted to Number to be safe
-//         price: Number(body.price),  // 👈 Converted to Number to be safe
+//         age: Number(body.age),      
+//         price: Number(body.price),  
 //         color: body.color,
 //         description: body.description,
 //         imageUrl: body.imageUrl,
@@ -104,14 +40,8 @@
 //     });
 
 //     return NextResponse.json({ success: true, pet: newPet });
-//   } catch (error: any) { // 👈 Added ': any' to fix "Object is of type unknown"
-//     console.error("Create Error:", error); 
-    
-//     // Now TypeScript allows accessing .code because we used 'any'
-//     if (error.code === 'P2002') {
-//       return NextResponse.json({ error: "A pet with this ID already exists." }, { status: 400 });
-//     }
-    
+//   } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+//     console.error("POST Error:", error);
 //     return NextResponse.json({ error: error.message || "Failed to create pet" }, { status: 500 });
 //   }
 // }
@@ -121,13 +51,8 @@
 
 
 
-
-
-
-
 import { NextRequest, NextResponse } from 'next/server';
-// 👇 Check this import path. If you moved files to 'src', it might be '@/lib/prisma'
-import prisma from '@/src/lib/prisma'; 
+import prisma from '@/src/lib/prisma';
 
 // 1. GET ALL PETS
 export async function GET() {
@@ -137,7 +62,7 @@ export async function GET() {
     });
     return NextResponse.json(pets);
   } catch (error) {
-    console.error("GET Error:", error); // 👈 Check your VS Code terminal for this log
+    console.error("GET Error:", error);
     return NextResponse.json({ error: "Failed to fetch pets" }, { status: 500 });
   }
 }
@@ -147,27 +72,45 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    console.log("📝 Incoming Data:", body); // Debug Log
+
+    // Validation: Ensure required fields exist
+    if (!body.name || !body.category || !body.price) {
+        return NextResponse.json({ error: "Missing required fields (name, category, or price)" }, { status: 400 });
+    }
+
     const newPet = await prisma.pet.create({
       data: {
-        code: body.id,        
-        name: body.title,
+        code: body.code || `SKU-${Date.now()}`, // Auto-generate if missing
+        name: body.name,        // Changed from body.title to body.name to match form
         category: body.category,
         breed: body.breed,
         gender: body.gender,
-        age: Number(body.age),      // 👈 Must be Number now
-        price: Number(body.price),  // 👈 Must be Number now
+        
+        // ⚠️ CRITICAL FIX: Your Schema says String, so we use String()
+        age: body.age ? String(body.age) : undefined,      
+        price: String(body.price),   
+        
         color: body.color,
         description: body.description,
         imageUrl: body.imageUrl,
         images: body.images || [],
-        healthGuarantee: body.healthGuarantee,
+        healthGuarantee: Boolean(body.healthGuarantee),
         status: 'Available'
       }
     });
 
+    console.log("✅ Pet Created:", newPet.id);
     return NextResponse.json({ success: true, pet: newPet });
-  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-    console.error("POST Error:", error);
+
+  } catch (error: any) {
+    console.error("❌ POST Error:", error);
+    
+    // Check for Duplicate Code Error (P2002)
+    if (error.code === 'P2002') {
+        return NextResponse.json({ error: "A pet with this SKU Code already exists." }, { status: 409 });
+    }
+
     return NextResponse.json({ error: error.message || "Failed to create pet" }, { status: 500 });
   }
 }

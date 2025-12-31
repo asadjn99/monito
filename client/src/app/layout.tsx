@@ -5,6 +5,8 @@ import Navbar from "@/src/components/Navbar";
 import AdminAwareFooter from "@/src/components/AdminAwareFooter";
 import { Providers } from "@/src/components/Providers"; 
 import { CartProvider } from "@/src/context/CartContext";
+import AuthProvider from "@/src/components/AuthProvider";
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <body className={inter.className}>
-        {/* 2. Wrap EVERYTHING inside Providers */}
         <Providers>
           <CartProvider>
           <Navbar /> 

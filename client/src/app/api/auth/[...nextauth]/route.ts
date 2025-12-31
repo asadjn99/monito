@@ -3,15 +3,14 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: NextAuthOptions = {
-  
   providers: [
-    // 1. Google Provider
+    // 1. Google Provider (For Customers)
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
 
-    
+    // 2. Credentials Provider (For Admin via Database API)
     CredentialsProvider({
       name: "Admin Login",
       credentials: {
@@ -19,9 +18,11 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/login`, {
+          // Make sure NEXT_PUBLIC_API_URL is set in your .env file (e.g., http://localhost:3000)
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+          
+          const res = await fetch(`${apiUrl}/api/v1/admin/login`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -32,13 +33,14 @@ export const authOptions: NextAuthOptions = {
 
           const user = await res.json();
 
-          /
+          // Check if API returned a valid user
           if (res.ok && user) {
             return user;
           }
+          
           return null; // Login failed
         } catch (e) {
-          console.error("Login Error:", e);
+          console.error("Login Fetch Error:", e);
           return null;
         }
       }
@@ -46,7 +48,7 @@ export const authOptions: NextAuthOptions = {
   ],
   
   pages: {
-    signIn: '/login',
+    signIn: '/login', // Or '/admin/login' if you want a dedicated admin page
     error: '/login', 
   },
   
