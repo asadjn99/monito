@@ -59,7 +59,7 @@ const Navbar = () => {
           {/* --- DESKTOP LINKS --- */}
           <ul className="hidden lg:flex gap-8 font-bold text-base items-center text-blue-900">
             <li><Link href="/" className={linkStyle}>Home</Link></li>
-            <li><Link href="/pets" className={linkStyle}>Category</Link></li>
+            <li><Link href="/pets" className={linkStyle}>Browse Pets</Link></li>
             <li><Link href="/about" className={linkStyle}>About</Link></li>
             <li><Link href="/contact" className={linkStyle}>Contact</Link></li>
           </ul>
