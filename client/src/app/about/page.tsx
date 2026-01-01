@@ -44,9 +44,9 @@ export default function AboutPage() {
            {/* Image Side */}
            <div className="w-full md:w-1/2 relative">
               {/* UPDATE 4: Adjusted aspect ratio and margin to ensure it sits perfectly */}
-              <div className="relative w-full h-[500px] md:h-[600px] mt-auto">
+              <div className="relative w-full h-125 md:h-150 mt-auto">
                  {/* Blob Background */}
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[100%] bg-[#FDF3DA] rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-full bg-[#FDF3DA] rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
                  
                  <Image 
                    src="/images/about.png" 
