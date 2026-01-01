@@ -11,25 +11,42 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto">
         
         {/* ================= NEWSLETTER SECTION ================= */}
-        <div className="bg-[#003459] rounded-3xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-lg mb-16">
-          
-          {/* Text */}
-          <h2 className="text-white text-2xl md:text-3xl font-bold capitalize max-w-md text-center lg:text-left leading-tight">
-            Register now so you don't miss our programs
-          </h2>
+        {/* ================= NEWSLETTER SECTION ================= */}
+          <div className="relative bg-[#003459] rounded-[2.5rem] p-8 md:p-14 overflow-hidden shadow-2xl mb-16 mx-4 md:mx-0">
+            
+            {/* Decorative Background Elements (Subtle Glows) */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400 opacity-10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/3 pointer-events-none"></div>
 
-          {/* Input Form */}
-          <div className="bg-white p-3 rounded-2xl flex flex-col md:flex-row w-full lg:w-auto flex-1 max-w-2xl gap-3">
-             <input 
-               type="email" 
-               placeholder="Enter your Email" 
-               className="flex-1 w-full border border-gray-300 rounded-lg px-6 py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-900 transition-colors"
-             />
-             <button className="bg-[#003459] text-white px-10 py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors shadow-md whitespace-nowrap">
-               Subscribe Now
-             </button>
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-12">
+              
+              {/* Text Content */}
+              <div className="max-w-xl text-center lg:text-left space-y-2">
+                <h2 className="text-white text-2xl md:text-4xl font-extrabold capitalize leading-tight tracking-tight">
+                  Register now so you don't miss our programs
+                </h2>
+                <p className="text-blue-200 text-sm md:text-base font-medium">
+                  Subscribe to our newsletter for exclusive updates, pet care tips, and special offers.
+                </p>
+              </div>
+
+              {/* Input Form */}
+              <form className="bg-white p-2 rounded-2xl flex flex-col sm:flex-row w-full lg:w-auto flex-1 max-w-2xl gap-2 shadow-lg shadow-black/10">
+                <input 
+                  type="email" 
+                  placeholder="Enter your Email" 
+                  required
+                  className="flex-1 w-full bg-transparent border-none px-6 py-4 text-gray-700 placeholder-gray-400 font-medium focus:ring-0 focus:outline-none"
+                />
+                <button type="submit" className="bg-[#003459] text-white px-8 py-3.5 rounded-xl font-bold hover:bg-[#002a48] transition-all transform active:scale-95 shadow-md whitespace-nowrap">
+                  Subscribe Now
+                </button>
+              </form>
+
+            </div>
           </div>
-        </div>
+
+
 
         {/* ================= LINKS & SOCIALS ================= */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12 border-b-2 border-gray-200/50 pb-12">

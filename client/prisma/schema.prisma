@@ -147,3 +147,19 @@ model StoreSettings {
 
   updatedAt      DateTime @updatedAt
 }
+
+
+
+
+
+// --- CONTACT & SUPPORT ---
+
+model ContactMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String
+  subject   String
+  message   String
+  isRead    Boolean  @default(false) // To track unread messages
+  createdAt DateTime @default(now())
+}

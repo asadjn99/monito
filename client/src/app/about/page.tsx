@@ -24,7 +24,7 @@ export default function AboutPage() {
               </span>
               <h1 className="text-4xl md:text-6xl font-extrabold text-[#003459] leading-tight">
                  We Don't Just Sell Pets, <br/>
-                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#003459] to-blue-500">
+                 <span className="text-transparent bg-clip-text bg-linear-to-r from-[#003459] to-blue-500">
                    We Build Families.
                  </span>
               </h1>
