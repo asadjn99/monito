@@ -1,94 +1,159 @@
+
+
+
+
+
+// import { NextResponse } from 'next/server';
+// import prisma from '@/src/lib/prisma';
+
+// // Define the context type for Next.js 15+
+// type RouteContext = {
+//   params: Promise<{ id: string }>
+// };
+
+// // 1. GET SINGLE ORDER
+// export async function GET(req: Request, context: RouteContext) {
+//   try {
+//     // 🛑 FIX: Await the params object (Crucial for Next.js 15/16)
+//     const { id } = await context.params;
+
+//     if (!id) return NextResponse.json({ error: "ID Required" }, { status: 400 });
+
+//     // Try finding by MongoDB ID (24 chars) OR custom Order ID (ORD-123)
+//     let order;
+    
+//     // Check if it's a valid MongoDB ObjectID format
+//     if (id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id)) {
+//         order = await prisma.order.findUnique({ 
+//             where: { id }, 
+//             include: { items: true, user: true } 
+//         });
+//     } else {
+//         order = await prisma.order.findUnique({ 
+//             where: { orderId: id }, 
+//             include: { items: true, user: true } 
+//         });
+//     }
+
+//     if (!order) {
+//         return NextResponse.json({ error: "Order not found" }, { status: 404 });
+//     }
+
+//     return NextResponse.json(order);
+//   } catch (error: any) {
+//     console.error("GET Order Error:", error);
+//     return NextResponse.json({ error: "Server Error" }, { status: 500 });
+//   }
+// }
+
+// // 2. UPDATE ORDER (PATCH)
+// export async function PATCH(req: Request, context: RouteContext) {
+//   try {
+//     const { id } = await context.params;
+//     const body = await req.json();
+//     const { status, paymentStatus } = body;
+
+//     console.log(`🔄 UPDATING ORDER ${id} -> Status: ${status}, Payment: ${paymentStatus}`);
+
+//     // Determine how to find the order (ID vs OrderID)
+//     const whereClause = (id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id))
+//         ? { id }
+//         : { orderId: id };
+
+//     const updatedOrder = await prisma.order.update({
+//         where: whereClause,
+//         data: {
+//             // Only update fields if they are provided
+//             ...(status && { status }),
+//             ...(paymentStatus && { paymentStatus }),
+//         }
+//     });
+
+//     return NextResponse.json({ success: true, order: updatedOrder });
+
+//   } catch (error: any) {
+//     console.error("UPDATE Order Error:", error);
+//     return NextResponse.json({ error: error.message || "Update Failed" }, { status: 500 });
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { NextResponse } from 'next/server';
 import prisma from '@/src/lib/prisma';
 
-// Define the type for route context
+// Define the context for dynamic routes
 type RouteContext = {
   params: Promise<{ id: string }>
 };
 
-// 1. UPDATE ORDER STATUS (PATCH)
-export async function PATCH(req: Request, context: RouteContext) {
+export async function GET(req: Request, context: RouteContext) {
   try {
-    // 🛑 FIX: Await the params object
-    const { id } = await context.params; 
-    
-    const body = await req.json();
-    const { status, reason, paymentStatus } = body;
+    // 1. Await params (Required for Next.js 15)
+    const { id } = await context.params;
 
-    console.log(`🔄 Request to update Order: ${id} | Status: ${status} | Payment: ${paymentStatus}`);
+    console.log(`🚀 DEBUG: Fetching Order ID: ${id}`);
 
-    if (!id) {
-        return NextResponse.json({ error: "Order ID is missing" }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ error: "ID Missing" }, { status: 400 });
 
-    // Prepare Update Data
-    const updateData: any = {};
+    // 2. Safe Database Query
+    // We check if the incoming ID looks like a Mongo ID (24 hex chars)
+    // If YES -> Search by 'id'
+    // If NO (e.g. ORD-1234) -> Search by 'orderId'
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
 
-    // 1. If Status is provided, update it
-    if (status) {
-        updateData.status = status;
-        
-        // Handle Cancellation Reason
-        if (status === 'Cancelled') {
-           updateData.cancellationReason = reason || "Order cancelled by admin.";
-        } else {
-           updateData.cancellationReason = null; // Clear reason if re-activated
+    const order = await prisma.order.findUnique({
+        where: isMongoId 
+            ? { id: id }          // Search by _id
+            : { orderId: id },    // Search by orderId
+        include: { 
+            items: true, 
+            user: true 
         }
-    }
+    });
 
-    // 2. If Payment Status is provided (e.g. "Verified"), update it
-    if (paymentStatus) {
-        updateData.paymentStatus = paymentStatus;
-    }
-
-    let orderToUpdate;
-
-    // Check if ID looks like a MongoDB ID (24 chars hex)
-    if (id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id)) {
-        orderToUpdate = await prisma.order.update({
-            where: { id: id },
-            data: updateData
-        });
-    } else {
-        // Assume it is a custom orderId (e.g. ORD-1234)
-        orderToUpdate = await prisma.order.update({
-            where: { orderId: id },
-            data: updateData
-        });
-    }
-
-    console.log("✅ Update Success:", orderToUpdate.orderId);
-    return NextResponse.json({ success: true, order: orderToUpdate });
-
-  } catch (error: any) {
-    console.error("❌ ORDER UPDATE FAILED:", error.message);
-    if (error.code === 'P2025') {
+    // 3. Handle Not Found
+    if (!order) {
+        console.log("❌ DEBUG: Order not found in DB");
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
-    return NextResponse.json({ error: error.message || "Failed to update order" }, { status: 500 });
+
+    console.log("✅ DEBUG: Order Found!", order.orderId);
+    return NextResponse.json(order);
+
+  } catch (error: any) {
+    console.error("🔥 DEBUG CRASH:", error);
+    return NextResponse.json({ error: "Server Error" }, { status: 500 });
   }
 }
 
-// 2. GET SINGLE ORDER (GET)
-export async function GET(req: Request, context: RouteContext) {
+export async function PATCH(req: Request, context: RouteContext) {
   try {
-    // 🛑 FIX: Await the params object here too
     const { id } = await context.params;
-
-    let order;
+    const body = await req.json();
     
-    if (id.length === 24 && /^[0-9a-fA-F]{24}$/.test(id)) {
-        order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
-    } else {
-        order = await prisma.order.findUnique({ where: { orderId: id }, include: { items: true } });
-    }
+    console.log(`🔄 PATCHING: ${id}`, body);
 
-    if (!order) {
-        return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
+    
+    const updatedOrder = await prisma.order.update({
+        where: isMongoId ? { id } : { orderId: id },
+        data: body
+    });
 
-    return NextResponse.json(order);
-  } catch (error) {
-    return NextResponse.json({ error: "Server Error" }, { status: 500 });
+    return NextResponse.json({ success: true, order: updatedOrder });
+  } catch (error: any) {
+    console.error("PATCH Error:", error);
+    return NextResponse.json({ error: "Update Failed" }, { status: 500 });
   }
 }

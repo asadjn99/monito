@@ -10,29 +10,33 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
 
-        // 1. If trying to access the Admin Login Page, ALWAYS ALLOW
+        // 1. Always allow the Admin Login Page
         if (path === "/admin/login") {
           return true; 
         }
 
-        // 2. If trying to access any OTHER /admin page (Dashboard, etc.)
-        if (path.startsWith("/admin")) {
-           // MUST be logged in AND have role 'admin'
+        // 2. Protect Admin Pages AND Admin API Routes
+        // ⚠️ Added check for "/api/admin"
+        if (path.startsWith("/admin") || path.startsWith("/api/admin")) {
+           // Must be logged in AND have role 'admin'
            return token?.role === "admin";
         }
 
-        // 3. Allow all other routes (Home, Pets, etc.)
+        // 3. Allow all other routes (Home, Pets, Checkout, etc.)
         return true;
       },
     },
     pages: {
-      // If they are not authorized, send them here:
+      // If unauthorized, redirect to login
       signIn: "/admin/login", 
     },
   }
 );
 
-// ✅ FIX: Match all routes starting with /admin
 export const config = {
-  matcher: ["/admin","/admin/:path*"],
+  // ⚠️ CRITICAL UPDATE: Add "/api/admin/:path*" to protect your database!
+  matcher: [
+    "/admin/:path*", 
+    "/api/admin/:path*" 
+  ],
 };

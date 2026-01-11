@@ -1,3 +1,8 @@
+
+
+
+
+
 // 'use client';
 
 // import React, { useState, useEffect } from 'react';
@@ -39,17 +44,46 @@
 //     // A. Text Search (ID or Name)
 //     const matchesSearch = 
 //       order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()); // Added safe check ?.
+//       order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()); 
 
 //     // B. Status Filter (From Cards)
+//     // Ensure these strings match EXACTLY what is in your DB or updateOrder logic
 //     let matchesStatus = true;
-//     if (statusFilter === 'New') matchesStatus = order.orderStatus === 'Pending';
-//     if (statusFilter === 'Active') matchesStatus = ['Accepted', 'In-Progress', 'On the Way'].includes(order.orderStatus);
-//     if (statusFilter === 'Delivered') matchesStatus = order.orderStatus === 'Delivered';
-//     if (statusFilter === 'Rejected') matchesStatus = order.orderStatus === 'Cancelled';
+    
+//     if (statusFilter === 'New') {
+//         // Covers "Pending" and "Order Placed"
+//         matchesStatus = ['Pending', 'Order Placed'].includes(order.orderStatus);
+//     }
+//     else if (statusFilter === 'Active') {
+//         // Covers all "In Progress" states
+//         matchesStatus = ['Accepted', 'Confirmed', 'In-Progress', 'Processing', 'On the Way', 'Preparing', 'Out for Delivery'].includes(order.orderStatus);
+//     }
+//     else if (statusFilter === 'Preparing') {
+//          matchesStatus = order.orderStatus === 'Preparing';
+//     }
+//     else if (statusFilter === 'Out for Delivery') {
+//          matchesStatus = order.orderStatus === 'Out for Delivery';
+//     }
+//     else if (statusFilter === 'Delivered') {
+//         matchesStatus = order.orderStatus === 'Delivered';
+//     }
+//     else if (statusFilter === 'Rejected') {
+//         matchesStatus = order.orderStatus === 'Cancelled';
+//     }
 
 //     return matchesSearch && matchesStatus;
 //   });
+
+//   // Calculate Counts for Tabs Dynamically based on current data
+//   // This ensures the counts on cards match the list below
+//   const getCount = (filterType: string) => {
+//       if (!data?.orders) return 0;
+//       if (filterType === 'New') return data.orders.filter((o: any) => ['Pending', 'Order Placed'].includes(o.orderStatus)).length;
+//       if (filterType === 'Active') return data.orders.filter((o: any) => ['Accepted', 'Confirmed', 'In-Progress', 'Processing', 'On the Way', 'Preparing', 'Out for Delivery'].includes(o.orderStatus)).length;
+//       if (filterType === 'Delivered') return data.orders.filter((o: any) => o.orderStatus === 'Delivered').length;
+//       if (filterType === 'Rejected') return data.orders.filter((o: any) => o.orderStatus === 'Cancelled').length;
+//       return data.orders.length;
+//   };
 
 //   if (loading) return <div className="p-10 text-center">Loading Dashboard...</div>;
 
@@ -68,15 +102,15 @@
 //         />
 //         <DashboardCard 
 //           title="NEW" 
-//           count={data?.newOrders || 0} 
+//           count={getCount('New')} 
 //           icon={<Clock size={20} />} 
 //           isActive={statusFilter === 'New'}
 //           onClick={() => setStatusFilter('New')}
 //           color="border-blue-200 text-blue-600 bg-blue-50"
 //         />
 //         <DashboardCard 
-//           title="ACTIVE" 
-//           count={data?.activeOrders || 0} 
+//           title="ACTIVE / PREPARING" 
+//           count={getCount('Active')} 
 //           icon={<Truck size={20} />} 
 //           isActive={statusFilter === 'Active'}
 //           onClick={() => setStatusFilter('Active')}
@@ -84,7 +118,7 @@
 //         />
 //         <DashboardCard 
 //           title="DELIVERED" 
-//           count={data?.deliveredOrders || 0} 
+//           count={getCount('Delivered')} 
 //           icon={<CheckCircle size={20} />} 
 //           isActive={statusFilter === 'Delivered'}
 //           onClick={() => setStatusFilter('Delivered')}
@@ -92,13 +126,22 @@
 //         />
 //         <DashboardCard 
 //           title="REJECTED" 
-//           count={data?.rejectedOrders || 0} 
+//           count={getCount('Rejected')} 
 //           icon={<XCircle size={20} />} 
 //           isActive={statusFilter === 'Rejected'}
 //           onClick={() => setStatusFilter('Rejected')}
 //           color="border-red-200 text-red-600 bg-red-50"
 //         />
 //       </div>
+
+//       {/* ADDITIONAL FILTER TABS FOR ACTIVE ORDERS */}
+//       {statusFilter === 'Active' && (
+//           <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+//               <button onClick={() => setStatusFilter('Active')} className="px-3 py-1 bg-gray-200 rounded-full text-xs font-bold">All Active</button>
+//               <button onClick={() => setStatusFilter('Preparing')} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200">Preparing</button>
+//               <button onClick={() => setStatusFilter('Out for Delivery')} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200">Out for Delivery</button>
+//           </div>
+//       )}
 
 //       {/* RECENT ORDERS TABLE */}
 //       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -209,15 +252,354 @@
 
 // const getStatusColor = (status: string) => {
 //   switch (status) {
-//     case 'Pending': return 'bg-yellow-100 text-yellow-800';
-//     case 'Accepted': return 'bg-blue-100 text-blue-800';
-//     case 'In-Progress': return 'bg-indigo-100 text-indigo-800';
-//     case 'On the Way': return 'bg-purple-100 text-purple-800';
+//     case 'Pending': 
+//     case 'Order Placed': return 'bg-yellow-100 text-yellow-800';
+    
+//     case 'Accepted': 
+//     case 'Confirmed': return 'bg-blue-100 text-blue-800';
+    
+//     case 'In-Progress': 
+//     case 'Preparing': return 'bg-indigo-100 text-indigo-800';
+    
+//     case 'On the Way': 
+//     case 'Out for Delivery': return 'bg-purple-100 text-purple-800';
+    
 //     case 'Delivered': return 'bg-green-100 text-green-800';
-//     case 'Cancelled': return 'bg-red-100 text-red-800';
+    
+//     case 'Cancelled': 
+//     case 'Rejected': return 'bg-red-100 text-red-800';
+    
 //     default: return 'bg-gray-100 text-gray-800';
 //   }
 // };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 'use client';
+
+// import React, { useState, useEffect } from 'react';
+// import Link from 'next/link';
+// import { 
+//   ShoppingBag, Clock, Truck, CheckCircle, XCircle, RefreshCw, Search, Eye
+// } from 'lucide-react';
+
+// export default function AdminOrdersDashboard() {
+//   const [data, setData] = useState<any>(null);
+//   const [loading, setLoading] = useState(true);
+  
+//   // 1. New State for filtering via Top Cards
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [statusFilter, setStatusFilter] = useState('All'); 
+
+//   // Fetch Live Data
+//   const fetchOrders = async () => {
+//     setLoading(true);
+//     try {
+//       // ⚠️ FIX: Added timestamp to prevent browser caching old data
+//       const res = await fetch(`/api/admin/orders?t=${Date.now()}`, { 
+//         cache: 'no-store' 
+//       });
+//       const json = await res.json();
+//       if (json.success) {
+//         setData(json);
+//       }
+//     } catch (error) {
+//       console.error("Failed to fetch orders", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchOrders();
+//   }, []);
+
+//   // 2. Advanced Filter Logic (Handles Search AND Card Clicks)
+//   const filteredOrders = data?.orders?.filter((order: any) => {
+//     // A. Text Search (ID or Name or Email)
+//     const matchesSearch = 
+//       (order._id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       (order.user?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       (order.user?.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+//     // B. Status Filter (From Cards)
+//     let matchesStatus = true;
+    
+//     if (statusFilter === 'New') {
+//         matchesStatus = ['Pending', 'Order Placed'].includes(order.orderStatus);
+//     }
+//     else if (statusFilter === 'Active') {
+//         matchesStatus = ['Accepted', 'Confirmed', 'In-Progress', 'Processing', 'On the Way', 'Preparing', 'Out for Delivery'].includes(order.orderStatus);
+//     }
+//     else if (statusFilter === 'Preparing') {
+//           matchesStatus = order.orderStatus === 'Preparing';
+//     }
+//     else if (statusFilter === 'Out for Delivery') {
+//           matchesStatus = order.orderStatus === 'Out for Delivery';
+//     }
+//     else if (statusFilter === 'Delivered') {
+//         matchesStatus = order.orderStatus === 'Delivered';
+//     }
+//     else if (statusFilter === 'Rejected') {
+//         matchesStatus = order.orderStatus === 'Cancelled';
+//     }
+
+//     return matchesSearch && matchesStatus;
+//   });
+
+//   // Calculate Counts for Tabs Dynamically based on current data
+//   const getCount = (filterType: string) => {
+//       if (!data?.orders) return 0;
+//       if (filterType === 'New') return data.orders.filter((o: any) => ['Pending', 'Order Placed'].includes(o.orderStatus)).length;
+//       if (filterType === 'Active') return data.orders.filter((o: any) => ['Accepted', 'Confirmed', 'In-Progress', 'Processing', 'On the Way', 'Preparing', 'Out for Delivery'].includes(o.orderStatus)).length;
+//       if (filterType === 'Delivered') return data.orders.filter((o: any) => o.orderStatus === 'Delivered').length;
+//       if (filterType === 'Rejected') return data.orders.filter((o: any) => o.orderStatus === 'Cancelled').length;
+//       return data.orders.length;
+//   };
+
+//   if (loading) return <div className="p-10 text-center animate-pulse">Loading Dashboard...</div>;
+
+//   return (
+//     <div className="p-6 bg-gray-50 min-h-screen">
+      
+//       {/* 3. INTERACTIVE TOP CARDS */}
+//       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+//         <DashboardCard 
+//           title="TOTAL ORDERS" 
+//           count={data?.orders?.length || 0} // Use length instead of totalOrders to be safe
+//           icon={<ShoppingBag size={20} />} 
+//           isActive={statusFilter === 'All'}
+//           onClick={() => setStatusFilter('All')}
+//           color="border-gray-200 text-gray-600"
+//         />
+//         <DashboardCard 
+//           title="NEW" 
+//           count={getCount('New')} 
+//           icon={<Clock size={20} />} 
+//           isActive={statusFilter === 'New'}
+//           onClick={() => setStatusFilter('New')}
+//           color="border-blue-200 text-blue-600 bg-blue-50"
+//         />
+//         <DashboardCard 
+//           title="ACTIVE / PREPARING" 
+//           count={getCount('Active')} 
+//           icon={<Truck size={20} />} 
+//           isActive={statusFilter === 'Active'}
+//           onClick={() => setStatusFilter('Active')}
+//           color="border-purple-200 text-purple-600 bg-purple-50"
+//         />
+//         <DashboardCard 
+//           title="DELIVERED" 
+//           count={getCount('Delivered')} 
+//           icon={<CheckCircle size={20} />} 
+//           isActive={statusFilter === 'Delivered'}
+//           onClick={() => setStatusFilter('Delivered')}
+//           color="border-green-200 text-green-600 bg-green-50"
+//         />
+//         <DashboardCard 
+//           title="REJECTED" 
+//           count={getCount('Rejected')} 
+//           icon={<XCircle size={20} />} 
+//           isActive={statusFilter === 'Rejected'}
+//           onClick={() => setStatusFilter('Rejected')}
+//           color="border-red-200 text-red-600 bg-red-50"
+//         />
+//       </div>
+
+//       {/* ADDITIONAL FILTER TABS FOR ACTIVE ORDERS */}
+//       {statusFilter === 'Active' && (
+//           <div className="flex gap-2 mb-4 overflow-x-auto pb-2 animate-in slide-in-from-left-2">
+//               <button onClick={() => setStatusFilter('Active')} className="px-3 py-1 bg-gray-200 rounded-full text-xs font-bold hover:bg-gray-300 transition">All Active</button>
+//               <button onClick={() => setStatusFilter('Preparing')} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200 transition">Preparing</button>
+//               <button onClick={() => setStatusFilter('Out for Delivery')} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200 transition">Out for Delivery</button>
+//           </div>
+//       )}
+
+//       {/* RECENT ORDERS TABLE */}
+//       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+//         <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+//           <div className="flex items-center gap-3">
+//              <h2 className="text-lg font-bold text-gray-800">Orders List</h2>
+//              {/* Show current filter badge */}
+//              {statusFilter !== 'All' && (
+//                 <span className="px-2 py-1 text-xs font-bold rounded bg-gray-100 text-gray-600 uppercase">
+//                     Showing: {statusFilter}
+//                 </span>
+//              )}
+//           </div>
+          
+//           <div className="flex gap-2 w-full md:w-auto">
+//             <div className="relative flex-1 md:w-64">
+//               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+//               <input 
+//                 type="text" 
+//                 placeholder="Search Order ID, Name or Email..." 
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//                 className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+//               />
+//             </div>
+//             <button onClick={fetchOrders} className="p-2 border rounded-lg hover:bg-gray-50 text-gray-600 transition" title="Refresh Data">
+//               <RefreshCw size={18} />
+//             </button>
+//           </div>
+//         </div>
+
+//         <div className="overflow-x-auto">
+//           <table className="w-full text-left border-collapse">
+//             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
+//               <tr>
+//                 <th className="px-6 py-4">Order ID</th>
+//                 <th className="px-6 py-4">Customer</th>
+//                 <th className="px-6 py-4">Date</th>
+//                 <th className="px-6 py-4">Amount</th>
+//                 <th className="px-6 py-4">Status</th>
+//                 <th className="px-6 py-4 text-center">Action</th>
+//               </tr>
+//             </thead>
+//             <tbody className="divide-y divide-gray-100">
+//               {filteredOrders?.length > 0 ? (
+//                 filteredOrders.map((order: any) => (
+//                   <tr key={order._id} className="hover:bg-gray-50 transition group">
+//                     <td className="px-6 py-4 text-sm font-mono text-gray-600 font-bold">
+//                       <Link href={`/admin/orders/${order._id}`} className="hover:text-blue-600 hover:underline">
+//                         #{order._id?.slice(-6).toUpperCase() || 'N/A'}
+//                       </Link>
+//                     </td>
+//                     <td className="px-6 py-4">
+//                       <div className="font-medium text-gray-900">{order.user?.name || 'Guest User'}</div>
+//                       <div className="text-xs text-gray-500">{order.user?.email || 'No Email'}</div>
+//                     </td>
+//                     <td className="px-6 py-4 text-sm text-gray-500">
+//                       {new Date(order.createdAt).toLocaleDateString()}
+//                     </td>
+//                     <td className="px-6 py-4 font-bold text-gray-900">
+//                       {order.totalPrice?.toLocaleString()} <span className="text-xs font-normal text-gray-400">PKR</span>
+//                     </td>
+//                     <td className="px-6 py-4">
+//                       <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${getStatusColor(order.orderStatus)}`}>
+//                         {order.orderStatus}
+//                       </span>
+//                     </td>
+//                     <td className="px-6 py-4 text-center">
+//                       <Link 
+//                         href={`/admin/orders/${order._id}`}
+//                         className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition"
+//                       >
+//                         <Eye size={16} />
+//                       </Link>
+//                     </td>
+//                   </tr>
+//                 ))
+//               ) : (
+//                 <tr>
+//                   <td colSpan={6} className="text-center py-20 text-gray-400">
+//                     <div className="flex flex-col items-center justify-center">
+//                         <ShoppingBag size={40} className="mb-4 opacity-20"/>
+//                         <p>No orders found {statusFilter !== 'All' && `in "${statusFilter}"`}.</p>
+//                     </div>
+//                   </td>
+//                 </tr>
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // 4. UPDATED CARD COMPONENT (Clickable + Active State)
+// const DashboardCard = ({ title, count, color, icon, onClick, isActive }: any) => (
+//   <button 
+//     onClick={onClick}
+//     className={`p-4 rounded-xl border shadow-sm flex flex-col justify-between h-24 w-full text-left transition-all duration-200
+//       ${isActive ? 'ring-2 ring-blue-500 transform scale-105 shadow-md bg-white' : 'bg-white hover:bg-gray-50 hover:border-gray-300'}
+//       ${color}
+//     `}
+//   >
+//     <div className="flex justify-between items-start w-full">
+//       <span className="text-xs font-bold uppercase tracking-wider opacity-80">{title}</span>
+//       {icon}
+//     </div>
+//     <div className="text-3xl font-extrabold">{count}</div>
+//   </button>
+// );
+
+// const getStatusColor = (status: string) => {
+//   switch (status) {
+//     case 'Pending': 
+//     case 'Order Placed': return 'bg-yellow-100 text-yellow-700';
+    
+//     case 'Accepted': 
+//     case 'Confirmed': return 'bg-blue-100 text-blue-700';
+    
+//     case 'In-Progress': 
+//     case 'Preparing': return 'bg-indigo-100 text-indigo-700';
+    
+//     case 'On the Way': 
+//     case 'Out for Delivery': return 'bg-purple-100 text-purple-700';
+    
+//     case 'Delivered': return 'bg-green-100 text-green-700';
+    
+//     case 'Cancelled': 
+//     case 'Rejected': return 'bg-red-100 text-red-700';
+    
+//     default: return 'bg-gray-100 text-gray-600';
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -254,7 +636,10 @@ export default function AdminOrdersDashboard() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/orders'); 
+      // ⚠️ FIX: Added timestamp to prevent browser caching old data
+      const res = await fetch(`/api/admin/orders?t=${Date.now()}`, { 
+        cache: 'no-store' 
+      });
       const json = await res.json();
       if (json.success) {
         setData(json);
@@ -272,60 +657,66 @@ export default function AdminOrdersDashboard() {
 
   // 2. Advanced Filter Logic (Handles Search AND Card Clicks)
   const filteredOrders = data?.orders?.filter((order: any) => {
-    // A. Text Search (ID or Name)
+    // 🛠️ FIX: Variable Name Mapping
+    const orderId = order.orderId || order.id || '';
+    const customerName = order.user?.name || order.customer || '';
+    const email = order.email || order.user?.email || '';
+    const status = order.status || 'New'; // Default to New if missing
+
+    // A. Text Search (ID or Name or Email)
     const matchesSearch = 
-      order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()); 
+      orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase());
 
     // B. Status Filter (From Cards)
-    // Ensure these strings match EXACTLY what is in your DB or updateOrder logic
     let matchesStatus = true;
     
     if (statusFilter === 'New') {
-        // Covers "Pending" and "Order Placed"
-        matchesStatus = ['Pending', 'Order Placed'].includes(order.orderStatus);
+        matchesStatus = ['New', 'Pending', 'Order Placed'].includes(status);
     }
     else if (statusFilter === 'Active') {
-        // Covers all "In Progress" states
-        matchesStatus = ['Accepted', 'Confirmed', 'In-Progress', 'Processing', 'On the Way', 'Preparing', 'Out for Delivery'].includes(order.orderStatus);
+        matchesStatus = ['Confirmed', 'Preparing', 'Out for Delivery'].includes(status);
     }
     else if (statusFilter === 'Preparing') {
-         matchesStatus = order.orderStatus === 'Preparing';
+          matchesStatus = status === 'Preparing';
     }
     else if (statusFilter === 'Out for Delivery') {
-         matchesStatus = order.orderStatus === 'Out for Delivery';
+          matchesStatus = status === 'Out for Delivery';
     }
     else if (statusFilter === 'Delivered') {
-        matchesStatus = order.orderStatus === 'Delivered';
+        matchesStatus = status === 'Delivered';
     }
     else if (statusFilter === 'Rejected') {
-        matchesStatus = order.orderStatus === 'Cancelled';
+        matchesStatus = status === 'Cancelled';
     }
 
     return matchesSearch && matchesStatus;
   });
 
   // Calculate Counts for Tabs Dynamically based on current data
-  // This ensures the counts on cards match the list below
   const getCount = (filterType: string) => {
       if (!data?.orders) return 0;
-      if (filterType === 'New') return data.orders.filter((o: any) => ['Pending', 'Order Placed'].includes(o.orderStatus)).length;
-      if (filterType === 'Active') return data.orders.filter((o: any) => ['Accepted', 'Confirmed', 'In-Progress', 'Processing', 'On the Way', 'Preparing', 'Out for Delivery'].includes(o.orderStatus)).length;
-      if (filterType === 'Delivered') return data.orders.filter((o: any) => o.orderStatus === 'Delivered').length;
-      if (filterType === 'Rejected') return data.orders.filter((o: any) => o.orderStatus === 'Cancelled').length;
+      
+      // 🛠️ FIX: Use 'o.status' instead of 'o.orderStatus'
+      if (filterType === 'New') return data.orders.filter((o: any) => ['New', 'Pending', 'Order Placed'].includes(o.status)).length;
+      if (filterType === 'Active') return data.orders.filter((o: any) => ['Confirmed', 'Preparing', 'Out for Delivery'].includes(o.status)).length;
+      if (filterType === 'Delivered') return data.orders.filter((o: any) => o.status === 'Delivered').length;
+      if (filterType === 'Rejected') return data.orders.filter((o: any) => o.status === 'Cancelled').length;
+      
       return data.orders.length;
   };
 
-  if (loading) return <div className="p-10 text-center">Loading Dashboard...</div>;
+  if (loading) return <div className="p-10 text-center animate-pulse">Loading Dashboard...</div>;
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen animate-in fade-in duration-500">
       
       {/* 3. INTERACTIVE TOP CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <DashboardCard 
           title="TOTAL ORDERS" 
-          count={data?.totalOrders || 0} 
+          count={data?.orders?.length || 0} // Use length instead of totalOrders to be safe
           icon={<ShoppingBag size={20} />} 
           isActive={statusFilter === 'All'}
           onClick={() => setStatusFilter('All')}
@@ -367,10 +758,10 @@ export default function AdminOrdersDashboard() {
 
       {/* ADDITIONAL FILTER TABS FOR ACTIVE ORDERS */}
       {statusFilter === 'Active' && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-              <button onClick={() => setStatusFilter('Active')} className="px-3 py-1 bg-gray-200 rounded-full text-xs font-bold">All Active</button>
-              <button onClick={() => setStatusFilter('Preparing')} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200">Preparing</button>
-              <button onClick={() => setStatusFilter('Out for Delivery')} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200">Out for Delivery</button>
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 animate-in slide-in-from-left-2">
+              <button onClick={() => setStatusFilter('Active')} className="px-3 py-1 bg-gray-200 rounded-full text-xs font-bold hover:bg-gray-300 transition">All Active</button>
+              <button onClick={() => setStatusFilter('Preparing')} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-200 transition">Preparing</button>
+              <button onClick={() => setStatusFilter('Out for Delivery')} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200 transition">Out for Delivery</button>
           </div>
       )}
 
@@ -382,7 +773,7 @@ export default function AdminOrdersDashboard() {
              {/* Show current filter badge */}
              {statusFilter !== 'All' && (
                 <span className="px-2 py-1 text-xs font-bold rounded bg-gray-100 text-gray-600 uppercase">
-                    Showing: {statusFilter}
+                   Showing: {statusFilter}
                 </span>
              )}
           </div>
@@ -392,13 +783,13 @@ export default function AdminOrdersDashboard() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input 
                 type="text" 
-                placeholder="Search Order ID or Client..." 
+                placeholder="Search Order ID, Name or Email..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
               />
             </div>
-            <button onClick={fetchOrders} className="p-2 border rounded-lg hover:bg-gray-50 text-gray-600" title="Refresh Data">
+            <button onClick={fetchOrders} className="p-2 border rounded-lg hover:bg-gray-50 text-gray-600 transition" title="Refresh Data">
               <RefreshCw size={18} />
             </button>
           </div>
@@ -419,30 +810,36 @@ export default function AdminOrdersDashboard() {
             <tbody className="divide-y divide-gray-100">
               {filteredOrders?.length > 0 ? (
                 filteredOrders.map((order: any) => (
-                  <tr key={order._id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 text-sm font-mono text-gray-600">
-                      #{order._id.slice(-6).toUpperCase()}
+                  <tr key={order.id} className="hover:bg-gray-50 transition group">
+                    <td className="px-6 py-4 text-sm font-mono text-gray-600 font-bold">
+                       {/* 🛠️ FIX: Use 'orderId' or 'id' */}
+                      <Link href={`/admin/orders/${order.id}`} className="hover:text-blue-600 hover:underline">
+                        #{order.orderId || order.id?.slice(-6).toUpperCase() || 'N/A'}
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
-                      {/* Safe check for user name in case of deleted users */}
-                      <div className="font-medium text-gray-900">{order.user?.name || 'Unknown'}</div>
-                      <div className="text-xs text-gray-500">{order.user?.email}</div>
+                      {/* 🛠️ FIX: Use 'order.customer' fallback */}
+                      <div className="font-medium text-gray-900">{order.user?.name || order.customer || 'Guest User'}</div>
+                      <div className="text-xs text-gray-500">{order.email || order.user?.email || 'No Email'}</div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {order.totalPrice?.toLocaleString()} PKR
+                    <td className="px-6 py-4 font-bold text-gray-900">
+                      {/* 🛠️ FIX: Use 'total' instead of 'totalPrice' */}
+                      {Number(order.total).toLocaleString()} <span className="text-xs font-normal text-gray-400">PKR</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(order.orderStatus)}`}>
-                        {order.orderStatus}
+                      {/* 🛠️ FIX: Use 'status' instead of 'orderStatus' */}
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${getStatusColor(order.status)}`}>
+                        {order.status || 'NEW'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Link 
-                        href={`/admin/orders/${order._id}`}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+                      // order.orderId || order.id
+                        href={`/admin/orders/${order.id}`}
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition"
                       >
                         <Eye size={16} />
                       </Link>
@@ -451,8 +848,11 @@ export default function AdminOrdersDashboard() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-gray-500">
-                    No orders found {statusFilter !== 'All' && `in "${statusFilter}"`}.
+                  <td colSpan={6} className="text-center py-20 text-gray-400">
+                    <div className="flex flex-col items-center justify-center">
+                        <ShoppingBag size={40} className="mb-4 opacity-20"/>
+                        <p>No orders found {statusFilter !== 'All' && `in "${statusFilter}"`}.</p>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -468,8 +868,8 @@ export default function AdminOrdersDashboard() {
 const DashboardCard = ({ title, count, color, icon, onClick, isActive }: any) => (
   <button 
     onClick={onClick}
-    className={`p-4 rounded-xl border shadow-sm flex flex-col justify-between h-24 w-full text-left transition-all
-      ${isActive ? 'ring-2 ring-blue-500 transform scale-105' : 'hover:bg-gray-50'}
+    className={`p-4 rounded-xl border shadow-sm flex flex-col justify-between h-24 w-full text-left transition-all duration-200
+      ${isActive ? 'ring-2 ring-blue-500 transform scale-105 shadow-md bg-white' : 'bg-white hover:bg-gray-50 hover:border-gray-300'}
       ${color}
     `}
   >
@@ -477,29 +877,30 @@ const DashboardCard = ({ title, count, color, icon, onClick, isActive }: any) =>
       <span className="text-xs font-bold uppercase tracking-wider opacity-80">{title}</span>
       {icon}
     </div>
-    <div className="text-3xl font-bold">{count}</div>
+    <div className="text-3xl font-extrabold">{count}</div>
   </button>
 );
 
 const getStatusColor = (status: string) => {
   switch (status) {
+    case 'New':
     case 'Pending': 
-    case 'Order Placed': return 'bg-yellow-100 text-yellow-800';
+    case 'Order Placed': return 'bg-purple-100 text-purple-700'; // Changed New to Purple to stand out
     
     case 'Accepted': 
-    case 'Confirmed': return 'bg-blue-100 text-blue-800';
+    case 'Confirmed': return 'bg-blue-100 text-blue-700';
     
     case 'In-Progress': 
-    case 'Preparing': return 'bg-indigo-100 text-indigo-800';
+    case 'Preparing': return 'bg-indigo-100 text-indigo-700';
     
     case 'On the Way': 
-    case 'Out for Delivery': return 'bg-purple-100 text-purple-800';
+    case 'Out for Delivery': return 'bg-orange-100 text-orange-700';
     
-    case 'Delivered': return 'bg-green-100 text-green-800';
+    case 'Delivered': return 'bg-green-100 text-green-700';
     
     case 'Cancelled': 
-    case 'Rejected': return 'bg-red-100 text-red-800';
+    case 'Rejected': return 'bg-red-100 text-red-700';
     
-    default: return 'bg-gray-100 text-gray-800';
+    default: return 'bg-gray-100 text-gray-600';
   }
 };
